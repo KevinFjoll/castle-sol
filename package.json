@@ -1,0 +1,23 @@
+{
+  "name": "castle-sol",
+  "version": "0.0.1",
+  "description": "nft test contract",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "build": "truffle compile"
+  },
+  "dependencies": {
+    "@openzeppelin/contracts": "^3.4.2"
+  },
+  "devDependencies": {
+    "truffle": "^5.4.7"
+  },
+  "keywords": [
+    "nft",
+    "solidity"
+  ],
+  "author": "puf17640",
+  "license": "MIT"
+}
