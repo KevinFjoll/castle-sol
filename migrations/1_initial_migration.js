@@ -1,7 +1,5 @@
-const PieceContract = artifacts.require("PieceContract");
-const PuzzleContract = artifacts.require("PuzzleContract");
+const Migrations = artifacts.require("Migrations");
 
-module.exports = function (deployer) {
-  deployer.deploy(PieceContract);
-  deployer.deploy(PuzzleContract);
+module.exports = async function (deployer) {
+  await deployer.deploy(Migrations);
 };
