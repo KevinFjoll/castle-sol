@@ -6,7 +6,8 @@
     "test": "test"
   },
   "scripts": {
-    "build": "truffle compile"
+    "build": "truffle compile",
+    "dev": "truffle develop"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^3.4.2"

@@ -6,35 +6,24 @@ pragma abicoder v2;
 import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../node_modules/@openzeppelin/contracts/utils/EnumerableSet.sol";
+import "./Owner.sol";
 
-contract NFTContract is ERC721 {
+contract NFTContract is ERC721, Owner {
   using Counters for Counters.Counter;
   using EnumerableSet for EnumerableSet.UintSet;
 
   Counters.Counter private _tokenIds;
-  mapping(address => EnumerableSet.UintSet) private _ownerTokens;
 
   uint16 public maxSupply = 2e3;
   bool public mintingEnabled = false;
-  address payable public contractOwner;
 
-  constructor() ERC721("Castle-Test", "TEST") {
-    contractOwner = msg.sender;
-  }
+  constructor() ERC721("Castle-Test", "TEST") {}
 
-  modifier onlyOwner() {
-    require(
-      msg.sender == contractOwner,
-      "NFTContract: caller is not the owner on onlyOwner modified function"
-    );
-    _;
-  }
-
-  function setMintingEnabled(bool enabled) public onlyOwner returns (bool) {
+  function setMintingEnabled(bool enabled) public isOwner returns (bool) {
     return mintingEnabled = enabled;
   }
 
-  function addToMaxSupply(uint16 add) public onlyOwner returns (uint16) {
+  function addToMaxSupply(uint16 add) public isOwner returns (uint16) {
     require(
       maxSupply + add <= type(uint16).max,
       "NFTContract: maxSupply cannot be higher than it's types maximum value"
@@ -53,7 +42,6 @@ contract NFTContract is ERC721 {
     uint256 newItemId = _tokenIds.current();
     _safeMint(msg.sender, newItemId);
     _setTokenURI(newItemId, tokenURI);
-    _ownerTokens[msg.sender].add(newItemId);
     return newItemId;
   }
 
@@ -67,12 +55,12 @@ contract NFTContract is ERC721 {
       owner != address(0),
       "NFTContract: tokenID query for the zero address"
     );
-    bytes32[] memory byteArray = _ownerTokens[owner]._inner._values;
-    uint256[] memory tokenIDs = new uint256[](byteArray.length);
-    for (uint256 i = 0; i < byteArray.length; i++) {
-      tokenIDs[i] = uint256(byteArray[i]);
+    uint256 total = balanceOf(owner);
+    uint256[] memory idList = new uint256[](total);
+    for (uint256 i = 0; i < total; i++) {
+      idList[i] = tokenOfOwnerByIndex(owner, i);
     }
-    return tokenIDs;
+    return idList;
   }
 
   function ownerTokenMetadata(address owner)
@@ -85,11 +73,11 @@ contract NFTContract is ERC721 {
       owner != address(0),
       "NFTContract: tokenMetadata query for the zero address"
     );
-    uint256[] memory tokenIDs = ownerTokenIDs(owner);
-    string[] memory tokenMetaData = new string[](tokenIDs.length);
-    for (uint256 i = 0; i < tokenIDs.length; i++) {
-      tokenMetaData[i] = tokenURI(tokenIDs[i]);
+    uint256 total = balanceOf(owner);
+    string[] memory metaList = new string[](total);
+    for (uint256 i = 0; i < total; i++) {
+      metaList[i] = tokenURI(tokenOfOwnerByIndex(owner, i));
     }
-    return tokenMetaData;
+    return metaList;
   }
 }
