@@ -1,5 +1,7 @@
-const NFTContract = artifacts.require("NFTContract");
+const PieceContract = artifacts.require("PieceContract");
+const PuzzleContract = artifacts.require("PuzzleContract");
 
 module.exports = function (deployer) {
-  deployer.deploy(NFTContract);
+  deployer.deploy(PieceContract);
+  deployer.deploy(PuzzleContract);
 };

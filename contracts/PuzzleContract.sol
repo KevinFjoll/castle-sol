@@ -8,16 +8,16 @@ import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../node_modules/@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "./Owner.sol";
 
-contract NFTContract is ERC721, Owner {
+contract PuzzleContract is ERC721, Owner {
   using Counters for Counters.Counter;
   using EnumerableSet for EnumerableSet.UintSet;
 
   Counters.Counter private _tokenIds;
 
-  uint16 public maxSupply = 2e3;
+  uint16 public maxSupply = 3;
   bool public mintingEnabled = false;
 
-  constructor() ERC721("Castle-Test", "TEST") {}
+  constructor() ERC721("Castle-Puzzle", "CSTLPZL") {}
 
   function setMintingEnabled(bool enabled) public isOwner returns (bool) {
     return mintingEnabled = enabled;
@@ -26,17 +26,17 @@ contract NFTContract is ERC721, Owner {
   function addToMaxSupply(uint16 add) public isOwner returns (uint16) {
     require(
       maxSupply + add <= type(uint16).max,
-      "NFTContract: maxSupply cannot be higher than it's types maximum value"
+      "PuzzleContract: maxSupply cannot be higher than it's types maximum value"
     );
     maxSupply += add;
     return maxSupply;
   }
 
   function mintNFT(string memory tokenURI) public payable returns (uint256) {
-    require(mintingEnabled, "NFTContract: minting is not enabled");
+    require(mintingEnabled, "PuzzleContract: minting is not enabled");
     require(
       _tokenIds.current() + 1 <= maxSupply,
-      "NFTContract: all tokens have been minted"
+      "PuzzleContract: all puzzles have been minted"
     );
     _tokenIds.increment();
     uint256 newItemId = _tokenIds.current();
@@ -53,7 +53,7 @@ contract NFTContract is ERC721, Owner {
   {
     require(
       owner != address(0),
-      "NFTContract: tokenID query for the zero address"
+      "PuzzleContract: tokenID query for the zero address"
     );
     uint256 total = balanceOf(owner);
     uint256[] memory idList = new uint256[](total);
@@ -71,7 +71,7 @@ contract NFTContract is ERC721, Owner {
   {
     require(
       owner != address(0),
-      "NFTContract: tokenMetadata query for the zero address"
+      "PuzzleContract: tokenMetadata query for the zero address"
     );
     uint256 total = balanceOf(owner);
     string[] memory metaList = new string[](total);
