@@ -4,7 +4,7 @@ contract Migrations {
   address public owner = msg.sender;
 
   // A function with the signature `last_completed_migration()`, returning a uint, is required.
-  uint public last_completed_migration;
+  uint256 public last_completed_migration;
 
   modifier restricted() {
     require(
@@ -15,7 +15,7 @@ contract Migrations {
   }
 
   // A function with the signature `setCompleted(uint)` is required.
-  function setCompleted(uint completed) public restricted {
+  function setCompleted(uint256 completed) public restricted {
     last_completed_migration = completed;
   }
 }

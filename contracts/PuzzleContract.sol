@@ -4,11 +4,14 @@ pragma solidity >=0.7.6;
 pragma abicoder v2;
 
 import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721Holder.sol";
 import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../node_modules/@openzeppelin/contracts/utils/EnumerableSet.sol";
-import "./Owner.sol";
+import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "./PieceContract.sol";
+import "./ArrayUtils.sol";
 
-contract PuzzleContract is ERC721, Owner {
+contract PuzzleContract is ERC721, ERC721Holder, Ownable {
   using Counters for Counters.Counter;
   using EnumerableSet for EnumerableSet.UintSet;
 
@@ -17,19 +20,16 @@ contract PuzzleContract is ERC721, Owner {
   uint16 public maxSupply = 3;
   bool public mintingEnabled = false;
 
+  PieceContract pieceContract;
+
   constructor() ERC721("Castle-Puzzle", "CSTLPZL") {}
 
-  function setMintingEnabled(bool enabled) public isOwner returns (bool) {
-    return mintingEnabled = enabled;
+  function updatePieceContract(address newContract) public onlyOwner {
+    pieceContract = PieceContract(newContract);
   }
 
-  function addToMaxSupply(uint16 add) public isOwner returns (uint16) {
-    require(
-      maxSupply + add <= type(uint16).max,
-      "PuzzleContract: maxSupply cannot be higher than it's types maximum value"
-    );
-    maxSupply += add;
-    return maxSupply;
+  function setMintingEnabled(bool enabled) public onlyOwner returns (bool) {
+    return mintingEnabled = enabled;
   }
 
   function mintNFT(string memory tokenURI) public payable returns (uint256) {

@@ -4,35 +4,62 @@ pragma solidity >=0.7.6;
 pragma abicoder v2;
 
 import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721Holder.sol";
 import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../node_modules/@openzeppelin/contracts/utils/EnumerableSet.sol";
-import "./Owner.sol";
+import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "./PuzzleContract.sol";
+import "./ArrayUtils.sol";
 
-contract PieceContract is ERC721, Owner {
+contract PieceContract is ERC721, ERC721Holder, Ownable {
   using Counters for Counters.Counter;
   using EnumerableSet for EnumerableSet.UintSet;
+  using ArrayUtils for uint256[];
+
+  struct Piece {
+    uint8 tier;
+    uint8 position;
+    uint8 puzzle;
+  }
 
   Counters.Counter private _tokenIds;
+  mapping(uint256 => Piece) private _pieces;
 
-  uint16 public maxSupply = 12;
+  uint8 public maxSupply = 12;
   bool public mintingEnabled = false;
+
+  PuzzleContract puzzleContract;
 
   constructor() ERC721("Castle-Piece", "CSTLPCE") {}
 
-  function setMintingEnabled(bool enabled) public isOwner returns (bool) {
+  function updatePuzzleContract(address newContract) public onlyOwner {
+    puzzleContract = PuzzleContract(newContract);
+  }
+
+  function setMintingEnabled(bool enabled) public onlyOwner returns (bool) {
     return mintingEnabled = enabled;
   }
 
-  function addToMaxSupply(uint16 add) public isOwner returns (uint16) {
-    require(
-      maxSupply + add <= type(uint16).max,
-      "PieceContract: maxSupply cannot be higher than it's types maximum value"
-    );
-    maxSupply += add;
-    return maxSupply;
+  function mintFullPuzzle() public view returns (bool) {
+    uint256 count = balanceOf(msg.sender);
+    require(count >= 2, "PieceContract: Full set is required to mint Puzzle");
+    //check if all unique pieces are held
+    uint256[] memory tokenIDs = ownerTokenIDs(msg.sender);
+    (bool found1, ) = tokenIDs.indexOf(1);
+    (bool found2, ) = tokenIDs.indexOf(2);
+    if (found1 && found2) return true;
+    return false;
   }
 
-  function mintNFT(string memory tokenURI) public payable returns (uint256) {
+  function mint(string memory tokenURI) public onlyOwner returns (uint256) {
+    return mintFor(msg.sender, tokenURI);
+  }
+
+  function mintFor(address owner, string memory tokenURI)
+    public
+    onlyOwner
+    returns (uint256)
+  {
     require(mintingEnabled, "PieceContract: minting is not enabled");
     require(
       _tokenIds.current() + 1 <= maxSupply,
@@ -40,8 +67,9 @@ contract PieceContract is ERC721, Owner {
     );
     _tokenIds.increment();
     uint256 newItemId = _tokenIds.current();
-    _safeMint(msg.sender, newItemId);
+    _safeMint(owner, newItemId);
     _setTokenURI(newItemId, tokenURI);
+
     return newItemId;
   }
 
