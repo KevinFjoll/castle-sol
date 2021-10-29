@@ -3,109 +3,69 @@
 pragma solidity >=0.7.6;
 pragma abicoder v2;
 
-import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721Holder.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC1155/ERC1155Holder.sol";
 import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../node_modules/@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
-import "./PuzzleContract.sol";
-import "./ArrayUtils.sol";
+import "./StringUtils.sol";
 
-contract PieceContract is ERC721, ERC721Holder, Ownable {
+/** @title Piece Contract */
+contract PieceContract is ERC1155, Ownable {
   using Counters for Counters.Counter;
   using EnumerableSet for EnumerableSet.UintSet;
-  using ArrayUtils for uint256[];
 
-  struct Piece {
-    uint8 tier;
-    uint8 position;
-    uint8 puzzle;
-  }
+  uint16[4] public pieceCounts = [1, 2, 4, 8];
+  uint8 public tierCount = 4;
+  uint8 public rowCount = 3;
+  uint8 public columnCount = 3;
 
-  Counters.Counter private _tokenIds;
-  mapping(uint256 => Piece) private _pieces;
-
-  uint8 public maxSupply = 12;
   bool public mintingEnabled = false;
 
-  PuzzleContract puzzleContract;
-
-  constructor() ERC721("Castle-Piece", "CSTLPCE") {}
-
-  function updatePuzzleContract(address newContract) public onlyOwner {
-    puzzleContract = PuzzleContract(newContract);
+  constructor()
+    ERC1155(
+      "https://raw.githubusercontent.com/CastleNFT/castle-sol/master/test-data/pieces/{id}.json"
+    )
+  {
+    super;
   }
 
   function setMintingEnabled(bool enabled) public onlyOwner returns (bool) {
     return mintingEnabled = enabled;
   }
 
-  function mintFullPuzzle() public view returns (bool) {
-    uint256 count = balanceOf(msg.sender);
-    require(count >= 2, "PieceContract: Full set is required to mint Puzzle");
-    //check if all unique pieces are held
-    uint256[] memory tokenIDs = ownerTokenIDs(msg.sender);
-    (bool found1, ) = tokenIDs.indexOf(1);
-    (bool found2, ) = tokenIDs.indexOf(2);
-    if (found1 && found2) return true;
-    return false;
+  function uri(uint256 tokenId) public pure override returns (string memory) {
+    return
+      string(
+        abi.encodePacked(
+          "https://raw.githubusercontent.com/CastleNFT/castle-sol/master/test-data/pieces/",
+          StringUtils.uint2str(tokenId),
+          ".json"
+        )
+      );
   }
 
-  function mint(string memory tokenURI) public onlyOwner returns (uint256) {
-    return mintFor(msg.sender, tokenURI);
-  }
-
-  function mintFor(address owner, string memory tokenURI)
-    public
-    onlyOwner
-    returns (uint256)
-  {
-    require(mintingEnabled, "PieceContract: minting is not enabled");
-    require(
-      _tokenIds.current() + 1 <= maxSupply,
-      "PieceContract: all pieces have been minted"
-    );
-    _tokenIds.increment();
-    uint256 newItemId = _tokenIds.current();
-    _safeMint(owner, newItemId);
-    _setTokenURI(newItemId, tokenURI);
-
-    return newItemId;
-  }
-
-  function ownerTokenIDs(address owner)
-    public
-    view
-    virtual
-    returns (uint256[] memory)
-  {
-    require(
-      owner != address(0),
-      "PieceContract: tokenID query for the zero address"
-    );
-    uint256 total = balanceOf(owner);
-    uint256[] memory idList = new uint256[](total);
-    for (uint256 i = 0; i < total; i++) {
-      idList[i] = tokenOfOwnerByIndex(owner, i);
+  function mintAllPieces(address mintTo) public onlyOwner {
+    require(mintingEnabled, "Minting is disabled.");
+    for (uint8 tier = 0; tier < tierCount; tier++) {
+      for (uint8 row = 0; row < rowCount; row++) {
+        for (uint8 col = 0; col < columnCount; col++) {
+          uint256 tokenId = calcTokenId(tier, row, col);
+          _mint(mintTo, tokenId, pieceCounts[tier], "");
+        }
+      }
     }
-    return idList;
+    mintingEnabled = false;
   }
 
-  function ownerTokenMetadata(address owner)
-    public
-    view
-    virtual
-    returns (string[] memory)
-  {
-    require(
-      owner != address(0),
-      "PieceContract: tokenMetadata query for the zero address"
-    );
-    uint256 total = balanceOf(owner);
-    string[] memory metaList = new string[](total);
-    for (uint256 i = 0; i < total; i++) {
-      metaList[i] = tokenURI(tokenOfOwnerByIndex(owner, i));
-    }
-    return metaList;
+  function calcTokenId(
+    uint256 tier,
+    uint256 row,
+    uint256 column
+  ) public view returns (uint256) {
+    return
+      1 +
+      (uint256(tier) * uint256(rowCount) * uint256(columnCount)) +
+      (uint256(row) * 5 + uint256(column));
   }
 }

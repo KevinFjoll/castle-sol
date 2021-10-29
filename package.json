@@ -7,12 +7,14 @@
   },
   "scripts": {
     "build": "truffle compile",
-    "dev": "truffle develop"
+    "dev": "truffle develop",
+    "remix": "remixd"
   },
   "dependencies": {
     "@openzeppelin/contracts": "^3.4.2"
   },
   "devDependencies": {
+    "@remix-project/remixd": "^0.5.2",
     "truffle": "^5.4.7"
   },
   "keywords": [

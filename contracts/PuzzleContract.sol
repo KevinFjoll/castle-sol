@@ -3,81 +3,53 @@
 pragma solidity >=0.7.6;
 pragma abicoder v2;
 
-import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "../node_modules/@openzeppelin/contracts/token/ERC721/ERC721Holder.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "../node_modules/@openzeppelin/contracts/token/ERC1155/ERC1155Holder.sol";
 import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../node_modules/@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "./StringUtils.sol";
 import "./PieceContract.sol";
-import "./ArrayUtils.sol";
 
-contract PuzzleContract is ERC721, ERC721Holder, Ownable {
+/** @title Puzzle Contract */
+contract PuzzleContract is ERC1155, Ownable {
   using Counters for Counters.Counter;
   using EnumerableSet for EnumerableSet.UintSet;
 
-  Counters.Counter private _tokenIds;
+  uint256 public GOLD = 1;
+  uint256 public SILVER = 2;
+  uint256 public IRON = 3;
+  uint256 public BRONCE = 4;
 
-  uint16 public maxSupply = 3;
   bool public mintingEnabled = false;
 
-  PieceContract pieceContract;
-
-  constructor() ERC721("Castle-Puzzle", "CSTLPZL") {}
-
-  function updatePieceContract(address newContract) public onlyOwner {
-    pieceContract = PieceContract(newContract);
-  }
+  constructor()
+    ERC1155(
+      "https://raw.githubusercontent.com/CastleNFT/castle-sol/master/test-data/puzzles/{id}.json"
+    )
+  {}
 
   function setMintingEnabled(bool enabled) public onlyOwner returns (bool) {
     return mintingEnabled = enabled;
   }
 
-  function mintNFT(string memory tokenURI) public payable returns (uint256) {
-    require(mintingEnabled, "PuzzleContract: minting is not enabled");
-    require(
-      _tokenIds.current() + 1 <= maxSupply,
-      "PuzzleContract: all puzzles have been minted"
-    );
-    _tokenIds.increment();
-    uint256 newItemId = _tokenIds.current();
-    _safeMint(msg.sender, newItemId);
-    _setTokenURI(newItemId, tokenURI);
-    return newItemId;
+  function uri(uint256 tokenId) public pure override returns (string memory) {
+    return
+      string(
+        abi.encodePacked(
+          "https://raw.githubusercontent.com/CastleNFT/castle-sol/master/test-data/puzzles/",
+          StringUtils.uint2str(tokenId),
+          ".json"
+        )
+      );
   }
 
-  function ownerTokenIDs(address owner)
-    public
-    view
-    virtual
-    returns (uint256[] memory)
-  {
-    require(
-      owner != address(0),
-      "PuzzleContract: tokenID query for the zero address"
-    );
-    uint256 total = balanceOf(owner);
-    uint256[] memory idList = new uint256[](total);
-    for (uint256 i = 0; i < total; i++) {
-      idList[i] = tokenOfOwnerByIndex(owner, i);
-    }
-    return idList;
-  }
-
-  function ownerTokenMetadata(address owner)
-    public
-    view
-    virtual
-    returns (string[] memory)
-  {
-    require(
-      owner != address(0),
-      "PuzzleContract: tokenMetadata query for the zero address"
-    );
-    uint256 total = balanceOf(owner);
-    string[] memory metaList = new string[](total);
-    for (uint256 i = 0; i < total; i++) {
-      metaList[i] = tokenURI(tokenOfOwnerByIndex(owner, i));
-    }
-    return metaList;
+  function mintAllPuzzles() public onlyOwner {
+    require(mintingEnabled, "Minting is disabled.");
+    _mint(msg.sender, GOLD, 1, "");
+    _mint(msg.sender, SILVER, 1, "");
+    _mint(msg.sender, IRON, 1, "");
+    _mint(msg.sender, BRONCE, 1, "");
+    mintingEnabled = false;
   }
 }
