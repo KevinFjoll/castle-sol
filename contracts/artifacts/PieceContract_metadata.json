@@ -6,7 +6,23 @@
 	"output": {
 		"abi": [
 			{
-				"inputs": [],
+				"inputs": [
+					{
+						"internalType": "uint16[4]",
+						"name": "_puzzlesPerTier",
+						"type": "uint16[4]"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_rowCount",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_columnCount",
+						"type": "uint8"
+					}
+				],
 				"stateMutability": "nonpayable",
 				"type": "constructor"
 			},
@@ -198,26 +214,26 @@
 			{
 				"inputs": [
 					{
-						"internalType": "uint256",
+						"internalType": "uint8",
 						"name": "tier",
-						"type": "uint256"
+						"type": "uint8"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint8",
 						"name": "row",
-						"type": "uint256"
+						"type": "uint8"
 					},
 					{
-						"internalType": "uint256",
+						"internalType": "uint8",
 						"name": "column",
-						"type": "uint256"
+						"type": "uint8"
 					}
 				],
 				"name": "calcTokenId",
 				"outputs": [
 					{
 						"internalType": "uint256",
-						"name": "",
+						"name": "tokenId",
 						"type": "uint256"
 					}
 				],
@@ -232,6 +248,25 @@
 						"internalType": "uint8",
 						"name": "",
 						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "tier",
+						"type": "uint8"
+					}
+				],
+				"name": "getTokenIdsOfTier",
+				"outputs": [
+					{
+						"internalType": "uint256[]",
+						"name": "tokenIds",
+						"type": "uint256[]"
 					}
 				],
 				"stateMutability": "view",
@@ -276,6 +311,19 @@
 			},
 			{
 				"inputs": [],
+				"name": "mintingDone",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
 				"name": "mintingEnabled",
 				"outputs": [
 					{
@@ -295,25 +343,6 @@
 						"internalType": "address",
 						"name": "",
 						"type": "address"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [
-					{
-						"internalType": "uint256",
-						"name": "",
-						"type": "uint256"
-					}
-				],
-				"name": "pieceCounts",
-				"outputs": [
-					{
-						"internalType": "uint16",
-						"name": "",
-						"type": "uint16"
 					}
 				],
 				"stateMutability": "view",
@@ -435,7 +464,7 @@
 				"outputs": [
 					{
 						"internalType": "bool",
-						"name": "",
+						"name": "_mintingEnabled",
 						"type": "bool"
 					}
 				],
@@ -456,19 +485,6 @@
 						"internalType": "bool",
 						"name": "",
 						"type": "bool"
-					}
-				],
-				"stateMutability": "view",
-				"type": "function"
-			},
-			{
-				"inputs": [],
-				"name": "tierCount",
-				"outputs": [
-					{
-						"internalType": "uint8",
-						"name": "",
-						"type": "uint8"
 					}
 				],
 				"stateMutability": "view",
@@ -499,7 +515,7 @@
 				"outputs": [
 					{
 						"internalType": "string",
-						"name": "",
+						"name": "_uri",
 						"type": "string"
 					}
 				],
@@ -516,8 +532,34 @@
 				"balanceOfBatch(address[],uint256[])": {
 					"details": "See {IERC1155-balanceOfBatch}. Requirements: - `accounts` and `ids` must have the same length."
 				},
+				"calcTokenId(uint8,uint8,uint8)": {
+					"details": "Calculates tokenId based on tier, row and column",
+					"params": {
+						"column": "the column in the puzzle",
+						"row": "the row in the puzzle",
+						"tier": "one of the defined tiers"
+					},
+					"returns": {
+						"tokenId": "the calculated tokenId"
+					}
+				},
+				"getTokenIdsOfTier(uint8)": {
+					"details": "Calculates tokenIds based on tier",
+					"params": {
+						"tier": "one of the defined tiers"
+					},
+					"returns": {
+						"tokenIds": "the array of tokenIds for the specified tier"
+					}
+				},
 				"isApprovedForAll(address,address)": {
 					"details": "See {IERC1155-isApprovedForAll}."
+				},
+				"mintAllPieces(address)": {
+					"details": "Mints all pieces to a specified address and disables minting",
+					"params": {
+						"mintTo": "address where pieces are minted to"
+					}
 				},
 				"owner()": {
 					"details": "Returns the address of the current owner."
@@ -534,11 +576,29 @@
 				"setApprovalForAll(address,bool)": {
 					"details": "See {IERC1155-setApprovalForAll}."
 				},
+				"setMintingEnabled(bool)": {
+					"details": "Enables minting.",
+					"params": {
+						"enabled": "boolean indicating the minting state to be set"
+					},
+					"returns": {
+						"_mintingEnabled": "whether minting is enabled now"
+					}
+				},
 				"supportsInterface(bytes4)": {
 					"details": "See {IERC165-supportsInterface}. Time complexity O(1), guaranteed to always use less than 30 000 gas."
 				},
 				"transferOwnership(address)": {
 					"details": "Transfers ownership of the contract to a new account (`newOwner`). Can only be called by the current owner."
+				},
+				"uri(uint256)": {
+					"details": "Override of uri function to return puzzle specific metadata uri",
+					"params": {
+						"tokenId": "tokenId of the puzzle whose metadata uri is being queried for"
+					},
+					"returns": {
+						"_uri": "the URI of this specific token  "
+					}
 				}
 			},
 			"title": "Piece Contract ",
@@ -560,25 +620,26 @@
 			"bytecodeHash": "ipfs"
 		},
 		"optimizer": {
-			"enabled": false,
+			"enabled": true,
 			"runs": 200
 		},
 		"remappings": []
 	},
 	"sources": {
 		"contracts/PieceContract.sol": {
-			"keccak256": "0x20ca17024649b0d0002da347820caf31d04e8470e522fd89515854deb248d671",
+			"keccak256": "0x3b5ba58ec34e0c06090b3bd7a0dff6f65ec7186390b2c3f8569e773ea852493e",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://dbb90c981518f03b6780534df553517a70d7f4644de920bcc0545b7f4eedb242",
-				"dweb:/ipfs/QmS7bZXX1qgVUNj3C9eygCrc8tspebPoog9ndS1qFE9MSm"
+				"bzz-raw://f5dd34619f703a2bc880262aa783159f80de4469bd255b4866f795233b4435de",
+				"dweb:/ipfs/QmQQw5C5rdgD9uKAk4m6aF7aMhBGmVD3Zc4cLMJcUccqib"
 			]
 		},
 		"contracts/StringUtils.sol": {
-			"keccak256": "0x586ac24eb102a3eccffdda45fc60d0d1964620516e620f5ac01dc1fc43f1254e",
+			"keccak256": "0x97796db5e867a26979f44146023a79d36f5cb37e87ce986d29fc8ba89af009f6",
+			"license": "MIT",
 			"urls": [
-				"bzz-raw://a2a9f760425dd05762695b711e37d447cd972525730c5d057ba0126e890de1ed",
-				"dweb:/ipfs/QmUQ25R4GTLmPSc4Dujb6oj7r65cQtkbY2q8kdHsD4wh6s"
+				"bzz-raw://034e3de3e0d0b570cd0983f652ded21f1c0a94ae8f71a0a47c687b8982286c95",
+				"dweb:/ipfs/QmZ7Jt7TEfqmWnYX9XKQE44o6dtZbrsfZ9rqKYGhwfP1Gt"
 			]
 		},
 		"node_modules/@openzeppelin/contracts/access/Ownable.sol": {

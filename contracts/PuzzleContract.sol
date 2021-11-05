@@ -9,31 +9,39 @@ import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
 import "../node_modules/@openzeppelin/contracts/utils/EnumerableSet.sol";
 import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
 import "./StringUtils.sol";
-import "./PieceContract.sol";
 
 /** @title Puzzle Contract */
 contract PuzzleContract is ERC1155, Ownable {
   using Counters for Counters.Counter;
   using EnumerableSet for EnumerableSet.UintSet;
 
-  uint256 public GOLD = 1;
-  uint256 public SILVER = 2;
-  uint256 public IRON = 3;
-  uint256 public BRONCE = 4;
+  uint16[4] puzzlesPerTier;
 
-  bool public mintingEnabled = false;
-
-  constructor()
+  bool public mintingEnabled;
+  bool public mintingDone;
+  
+  constructor(uint16[4] memory _puzzlesPerTier)
     ERC1155(
       "https://raw.githubusercontent.com/CastleNFT/castle-sol/master/test-data/puzzles/{id}.json"
     )
-  {}
-
-  function setMintingEnabled(bool enabled) public onlyOwner returns (bool) {
-    return mintingEnabled = enabled;
+  {
+      puzzlesPerTier = _puzzlesPerTier;
   }
 
-  function uri(uint256 tokenId) public pure override returns (string memory) {
+  /** @dev Enables minting.
+   * @param enabled boolean indicating the minting state to be set
+   * @return _mintingEnabled whether minting is enabled now
+   */
+  function setMintingEnabled(bool enabled) public onlyOwner returns (bool _mintingEnabled) {
+    require(!mintingDone, "Minting has already been done.");
+    return mintingEnabled = enabled;
+  }
+  
+  /** @dev Override of uri function to return puzzle specific metadata uri
+   * @param tokenId tokenId of the puzzle whose metadata uri is being queried for
+   * @return _uri the URI of this specific token
+   */
+  function uri(uint256 tokenId) public pure override returns (string memory _uri) {
     return
       string(
         abi.encodePacked(
@@ -44,12 +52,13 @@ contract PuzzleContract is ERC1155, Ownable {
       );
   }
 
+  /** @dev Mints all puzzles to the sender and disables minting.
+   */
   function mintAllPuzzles() public onlyOwner {
     require(mintingEnabled, "Minting is disabled.");
-    _mint(msg.sender, GOLD, 1, "");
-    _mint(msg.sender, SILVER, 1, "");
-    _mint(msg.sender, IRON, 1, "");
-    _mint(msg.sender, BRONCE, 1, "");
-    mintingEnabled = false;
+    for(uint256 i = 0; i < puzzlesPerTier.length; i++) {
+        _mint(msg.sender, i, puzzlesPerTier[i], "");
+    }
+    (mintingEnabled, mintingDone) = (false, true);
   }
 }

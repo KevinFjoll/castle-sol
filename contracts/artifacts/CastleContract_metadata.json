@@ -6,11 +6,6 @@
 	"output": {
 		"abi": [
 			{
-				"inputs": [],
-				"stateMutability": "nonpayable",
-				"type": "constructor"
-			},
-			{
 				"anonymous": false,
 				"inputs": [
 					{
@@ -30,6 +25,103 @@
 				"type": "event"
 			},
 			{
+				"inputs": [],
+				"name": "BRONCE_TIER",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "COLUMN_COUNT",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "GOLD_TIER",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "IRON_TIER",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "PUZZLES_PER_TIER",
+				"outputs": [
+					{
+						"internalType": "uint16",
+						"name": "",
+						"type": "uint16"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "ROW_COUNT",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "SILVER_TIER",
+				"outputs": [
+					{
+						"internalType": "uint8",
+						"name": "",
+						"type": "uint8"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
 				"inputs": [
 					{
 						"internalType": "uint8",
@@ -46,6 +138,32 @@
 					}
 				],
 				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [],
+				"name": "deploySubContracts",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "tier",
+						"type": "uint8"
+					}
+				],
+				"name": "lockPieces",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "success",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
 				"type": "function"
 			},
 			{
@@ -188,6 +306,25 @@
 			{
 				"inputs": [
 					{
+						"internalType": "uint8",
+						"name": "tier",
+						"type": "uint8"
+					}
+				],
+				"name": "retrievePieces",
+				"outputs": [
+					{
+						"internalType": "bool",
+						"name": "success",
+						"type": "bool"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "address",
 						"name": "mintPiecesTo",
 						"type": "address"
@@ -234,8 +371,26 @@
 		"devdoc": {
 			"kind": "dev",
 			"methods": {
-				"constructor": {
+				"canLockPiecesForTier(uint8)": {
+					"details": "Checks if a user can lock their pieces and retrieve a puzzle.",
+					"params": {
+						"tier": "the tier of which pieces should be checked for"
+					},
+					"returns": {
+						"success": "whether the user is able to lock pieces"
+					}
+				},
+				"deploySubContracts()": {
 					"details": "Deploys an instance of both PieceContract and PuzzleContract."
+				},
+				"lockPieces(uint8)": {
+					"details": "Locks a users pieces and returns a puzzle to the user.",
+					"params": {
+						"tier": "the tier of the pieces to be locked"
+					},
+					"returns": {
+						"success": "if the transfer has been finished successfully"
+					}
 				},
 				"owner()": {
 					"details": "Returns the address of the current owner."
@@ -248,6 +403,15 @@
 				},
 				"renounceOwnership()": {
 					"details": "Leaves the contract without owner. It will not be possible to call `onlyOwner` functions anymore. Can only be called by the current owner. NOTE: Renouncing ownership will leave the contract without an owner, thereby removing any functionality that is only available to the owner."
+				},
+				"retrievePieces(uint8)": {
+					"details": "Locks a users puzzle and returns its pieces to the user.",
+					"params": {
+						"tier": "the tier of the puzzle to be locked"
+					},
+					"returns": {
+						"success": "if the transfer has been finished successfully"
+					}
 				},
 				"runMinting(address)": {
 					"details": "Mints all pieces to an address and all puzzles to itself.",
@@ -281,42 +445,50 @@
 			"bytecodeHash": "ipfs"
 		},
 		"optimizer": {
-			"enabled": false,
+			"enabled": true,
 			"runs": 200
 		},
 		"remappings": []
 	},
 	"sources": {
-		"contracts/CastleContract.sol": {
-			"keccak256": "0x5bd5d53f8e4f07f67a9c297b92bf4847ac4f2615e8f70f011607d5b09566b3cd",
+		"contracts/ArrayUtils.sol": {
+			"keccak256": "0x162593bd6e3fa7c80e5449de99d3b367fee7392a4d523463952a6f5671c1986d",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://08aab8fb69f5edd8a4ca138fd5586f7601f47e85e6a3c324800de6f092e5ebcc",
-				"dweb:/ipfs/QmTVnNqYVRLLi8adjbcbgwUAXJt9esg3tAwPnfe6JaLMrQ"
+				"bzz-raw://37ea0a935a2ce506b3a358eaf8680ebc018539fe4a2a944a5184fd3c660592ef",
+				"dweb:/ipfs/QmbFQB4CcwvwszJpvwwSrDZM1kiiG4w7hYwh9jbJE4qUgt"
+			]
+		},
+		"contracts/CastleContract.sol": {
+			"keccak256": "0xb0360b6e2ec60c830d82b046740356cf15b91b393538e1790cd36a375f5529bd",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://ebaf68a94724e107fc7e5c199b272a187c9bf94d93e24b8c80ea2a4797a5dcfb",
+				"dweb:/ipfs/QmVhudjgQZVL9sLy8E1vJ25RBiacSUd8T1J1thzdLvAApY"
 			]
 		},
 		"contracts/PieceContract.sol": {
-			"keccak256": "0x20ca17024649b0d0002da347820caf31d04e8470e522fd89515854deb248d671",
+			"keccak256": "0x3b54923994effe28c9fadeb776185160f5bddcdd58cf527a29bda5907ba3eaba",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://dbb90c981518f03b6780534df553517a70d7f4644de920bcc0545b7f4eedb242",
-				"dweb:/ipfs/QmS7bZXX1qgVUNj3C9eygCrc8tspebPoog9ndS1qFE9MSm"
+				"bzz-raw://bf35e61e683e37ac9165a107c538601a443bc9e98e1f19b922f6662fb2fe5898",
+				"dweb:/ipfs/QmZPzAMD6agtYVx7dLEUQk6A648eRNUj56E3q8YxDNHgXt"
 			]
 		},
 		"contracts/PuzzleContract.sol": {
-			"keccak256": "0x0c66d83fa1ded8921bcb53bdd05d0a293af5e6dab1220e7c1884c96919b205dc",
+			"keccak256": "0x548f479d818b28ce33e5fa66e12d7f2ea1e4e38b8421b755ce87519cd3717b05",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://13b3362df542b53979f221a15c63cfc2619e89cc1d5703e84215e0cfe0a8fdf2",
-				"dweb:/ipfs/QmQTVPHHsfoJfMR3x1MfkqUxUcNcS3Sw9GhuU1GgdgX2sb"
+				"bzz-raw://25400250d6ea958487f24b542d4c89d18b270adb77f5028ee0f68d7207fa500a",
+				"dweb:/ipfs/QmNWRkWADb4W9E2tLesPVrbV1LT44XR3nkDHxnayWsje9Z"
 			]
 		},
 		"contracts/StringUtils.sol": {
-			"keccak256": "0xc6f25d3b18d3615983228ea89c09d0e23a00816305ff34dc56ceb0c2f63c2208",
+			"keccak256": "0x97796db5e867a26979f44146023a79d36f5cb37e87ce986d29fc8ba89af009f6",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://53d9ad620ee2e0f1a99c1eb300c0a1a8b7c1de5321d448099f8eb3d9c590d2e6",
-				"dweb:/ipfs/QmdNHoXGVEHxxCT7XdgWUD9BVa9dmtZufk2oyqvWaAH2uG"
+				"bzz-raw://034e3de3e0d0b570cd0983f652ded21f1c0a94ae8f71a0a47c687b8982286c95",
+				"dweb:/ipfs/QmZ7Jt7TEfqmWnYX9XKQE44o6dtZbrsfZ9rqKYGhwfP1Gt"
 			]
 		},
 		"node_modules/@openzeppelin/contracts/access/Ownable.sol": {

@@ -3,6 +3,10 @@
 pragma solidity >=0.7.6;
 
 library StringUtils {
+  /** @dev Returns the string representation of a uint256.
+   * @param _i the integer to be stringified
+   * @return _uintAsString the integer as string
+   */
   function uint2str(uint256 _i)
     internal
     pure
