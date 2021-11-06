@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "hardhat test",
-    "start": "hardhat run",
+    "deploy": "hardhat run scripts/deploy.ts",
     "compile": "hardhat compile"
   },
   "repository": {

@@ -1,7 +1,6 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
-pragma abicoder v2;
+pragma solidity ^0.8.4;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
 import "hardhat/console.sol";
@@ -45,7 +44,7 @@ contract CastleContract is ERC1155Holder, Ownable {
    * @return success if the transfer has been finished successfully
    */
   function retrievePieces(uint8 tier) external returns (bool success) {
-    require(puzzleContract.balanceOf(msg.sender, tier) > 0, "NO_PUZZLE"); // TODO: rework error message
+    require(puzzleContract.balanceOf(msg.sender, tier) > 0, "NO_PUZZLE");
     console.log("Retrieving pieces for %s with tier %s", msg.sender, tier);
     puzzleContract.safeTransferFrom(msg.sender, address(this), tier, 1, "");
     pieceContract.safeBatchTransferFrom(
@@ -76,7 +75,7 @@ contract CastleContract is ERC1155Holder, Ownable {
    * @return success if the transfer has been finished successfully
    */
   function lockPieces(uint8 tier) external returns (bool success) {
-    require(canLockPiecesForTier(tier), "INCOMPLETE_COLLECTION"); // TODO: rework error message
+    require(canLockPiecesForTier(tier), "INCOMPLETE_PUZZLE");
     console.log("Locking pieces for %s with tier %s", msg.sender, tier);
     pieceContract.safeBatchTransferFrom(
       msg.sender,
