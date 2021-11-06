@@ -3,7 +3,8 @@
 pragma solidity ^0.8.0;
 pragma abicoder v2;
 
-import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 import "./PieceContract.sol";
 import "./PuzzleContract.sol";
 import "./ArrayUtils.sol";
@@ -13,30 +14,27 @@ contract CastleContract is ERC1155Holder, Ownable {
   PieceContract public pieceContract;
   PuzzleContract public puzzleContract;
 
-  uint16[4] public PUZZLES_PER_TIER = [1, 2, 4, 8];
+  uint16[4] public puzzlesPerTier = [1, 2, 4, 8];
 
-  uint8 public ROW_COUNT = 3;
-  uint8 public COLUMN_COUNT = 3;
-  uint8 public GOLD_TIER = 1;
-  uint8 public SILVER_TIER = 2;
-  uint8 public IRON_TIER = 3;
-  uint8 public BRONCE_TIER = 4;
+  uint8 public rowCount = 3;
+  uint8 public columnCount = 3;
+  uint8 public goldTier = 1;
+  uint8 public silverTier = 2;
+  uint8 public ironTier = 3;
+  uint8 public bronceTier = 4;
 
   /** @dev Deploys an instance of both PieceContract and PuzzleContract.
    */
   function deploySubContracts() external onlyOwner {
-    pieceContract = new PieceContract(
-      PUZZLES_PER_TIER,
-      ROW_COUNT,
-      COLUMN_COUNT
-    );
-    puzzleContract = new PuzzleContract(PUZZLES_PER_TIER);
+    pieceContract = new PieceContract(puzzlesPerTier, rowCount, columnCount);
+    puzzleContract = new PuzzleContract(puzzlesPerTier);
   }
 
   /** @dev Enables minting on the children contracts.
    * @return success if both contracts are now enabled to mint
    */
   function prepareMinting() external onlyOwner returns (bool success) {
+    console.log("Preparing mint");
     return
       pieceContract.setMintingEnabled(true) &&
       puzzleContract.setMintingEnabled(true);
@@ -48,16 +46,13 @@ contract CastleContract is ERC1155Holder, Ownable {
    */
   function retrievePieces(uint8 tier) external returns (bool success) {
     require(puzzleContract.balanceOf(msg.sender, tier) > 0, "NO_PUZZLE"); // TODO: rework error message
-
+    console.log("Retrieving pieces for %s with tier %s", msg.sender, tier);
     puzzleContract.safeTransferFrom(msg.sender, address(this), tier, 1, "");
     pieceContract.safeBatchTransferFrom(
       address(this),
       msg.sender,
       pieceContract.getTokenIdsOfTier(tier),
-      ArrayUtils.getFilledArray(
-        pieceContract.rowCount() * pieceContract.columnCount(),
-        1
-      ),
+      ArrayUtils.getFilledArray(rowCount * columnCount, 1),
       ""
     );
     return true;
@@ -82,14 +77,12 @@ contract CastleContract is ERC1155Holder, Ownable {
    */
   function lockPieces(uint8 tier) external returns (bool success) {
     require(canLockPiecesForTier(tier), "INCOMPLETE_COLLECTION"); // TODO: rework error message
+    console.log("Locking pieces for %s with tier %s", msg.sender, tier);
     pieceContract.safeBatchTransferFrom(
       msg.sender,
       address(this),
       pieceContract.getTokenIdsOfTier(tier),
-      ArrayUtils.getFilledArray(
-        pieceContract.rowCount() * pieceContract.columnCount(),
-        1
-      ),
+      ArrayUtils.getFilledArray(rowCount * columnCount, 1),
       ""
     );
     puzzleContract.safeTransferFrom(address(this), msg.sender, tier, 1, "");
@@ -100,14 +93,8 @@ contract CastleContract is ERC1155Holder, Ownable {
    * @param mintPiecesTo address to send the minted pieces to
    */
   function runMinting(address mintPiecesTo) external onlyOwner {
-    require(
-      pieceContract.mintingEnabled(),
-      "Minting is disabled for PieceContract."
-    );
-    require(
-      puzzleContract.mintingEnabled(),
-      "Minting is disabled for PuzzleContract."
-    );
+    require(pieceContract.mintingEnabled(), "PIECE_MINT_DISABLED");
+    require(puzzleContract.mintingEnabled(), "PUZZLE_MINT_DISABLED");
     pieceContract.mintAllPieces(mintPiecesTo);
     puzzleContract.mintAllPuzzles();
   }

@@ -3,21 +3,17 @@
 pragma solidity ^0.8.4;
 pragma abicoder v2;
 
-import "../node_modules/@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
-import "../node_modules/@openzeppelin/contracts/token/ERC1155/ERC1155Holder.sol";
-import "../node_modules/@openzeppelin/contracts/utils/Counters.sol";
-import "../node_modules/@openzeppelin/contracts/utils/EnumerableSet.sol";
-import "../node_modules/@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
+import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "hardhat/console.sol";
 import "./StringUtils.sol";
 
 /** @title Piece Contract */
 contract PieceContract is ERC1155, Ownable {
-  using Counters for Counters.Counter;
-  using EnumerableSet for EnumerableSet.UintSet;
-
-  uint16[4] puzzlesPerTier;
-  uint8 public rowCount = 3;
-  uint8 public columnCount = 3;
+  uint16[4] private puzzlesPerTier;
+  uint8 private rowCount = 3;
+  uint8 private columnCount = 3;
 
   bool public mintingEnabled;
   bool public mintingDone;
@@ -46,6 +42,7 @@ contract PieceContract is ERC1155, Ownable {
     returns (bool _mintingEnabled)
   {
     require(!mintingDone, "Minting has already been done.");
+    console.log("Setting mintingEnabled to %s", _mintingEnabled);
     return mintingEnabled = enabled;
   }
 
@@ -74,6 +71,7 @@ contract PieceContract is ERC1155, Ownable {
    */
   function mintAllPieces(address mintTo) public onlyOwner {
     require(mintingEnabled, "Minting is disabled.");
+    console.log("Minting pieces to %s", mintTo);
     for (uint8 tier = 1; tier <= puzzlesPerTier.length; tier++) {
       for (uint8 row = 1; row <= rowCount; row++) {
         for (uint8 col = 1; col <= columnCount; col++) {
