@@ -13,10 +13,11 @@ contract CastleContract is ERC1155Holder, Ownable {
   PieceContract public pieceContract;
   PuzzleContract public puzzleContract;
 
-  uint16[4] private puzzlesPerTier = [1, 2, 4, 8];
+  uint16[4] public puzzlesPerTier = [1, 2, 4, 8];
 
-  uint8 private rowCount = 3;
-  uint8 private columnCount = 3;
+  uint8 public rowCount = 3;
+  uint8 public columnCount = 3;
+  uint8 public tierCount = uint8(puzzlesPerTier.length);
   uint8 private goldTier = 1;
   uint8 private silverTier = 2;
   uint8 private ironTier = 3;

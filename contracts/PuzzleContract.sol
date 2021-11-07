@@ -63,8 +63,8 @@ contract PuzzleContract is ERC1155, Ownable {
   function mintAllPuzzles() public onlyOwner {
     require(mintingEnabled, "Minting is disabled.");
     console.log("Minting puzzles to %s", msg.sender);
-    for (uint256 i = 0; i < puzzlesPerTier.length; i++) {
-      _mint(msg.sender, i, puzzlesPerTier[i], "");
+    for (uint256 i = 1; i <= puzzlesPerTier.length; i++) {
+      _mint(msg.sender, i, puzzlesPerTier[i - 1], "");
     }
     (mintingEnabled, mintingDone) = (false, true);
   }
