@@ -25,11 +25,11 @@ async function main() {
 
   console.log(`CastleContract deployed to: ${castle.address}`);
 
-  // await castle.deploySubContracts();
+  await castle.deploySubContracts();
 
-  // console.log(
-  //   `PuzzleContract deployed to: ${await castle.puzzleContract()} and PieceContract to: ${await castle.pieceContract()}`
-  // );
+  console.log(
+    `PuzzleContract deployed to: ${await castle.puzzleContract()} and PieceContract to: ${await castle.pieceContract()}`
+  );
 }
 
 // We recommend this pattern to be able to use async/await everywhere

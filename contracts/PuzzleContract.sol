@@ -34,7 +34,7 @@ contract PuzzleContract is ERC1155, Ownable {
     returns (bool _mintingEnabled)
   {
     require(!mintingDone, "Minting has already been done.");
-    console.log("Setting mintingEnabled to %s", _mintingEnabled);
+    console.log("Setting mintingEnabled to %s", enabled);
     return mintingEnabled = enabled;
   }
 
