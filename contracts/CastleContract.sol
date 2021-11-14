@@ -13,10 +13,10 @@ contract CastleContract is ERC1155Holder, Ownable {
   PieceContract public pieceContract;
   PuzzleContract public puzzleContract;
 
-  uint16[4] public puzzlesPerTier = [1, 2, 4, 8];
+  uint16[4] public puzzlesPerTier = [1, 2, 3, 4];
 
-  uint8 public rowCount = 3;
-  uint8 public columnCount = 3;
+  uint8 public rowCount = 5;
+  uint8 public columnCount = 5;
   uint8 public tierCount = uint8(puzzlesPerTier.length);
   uint8 private goldTier = 1;
   uint8 private silverTier = 2;
@@ -34,10 +34,19 @@ contract CastleContract is ERC1155Holder, Ownable {
    * @return success if both contracts are now enabled to mint
    */
   function prepareMinting() external onlyOwner returns (bool success) {
-    console.log("Preparing mint");
+    console.log("Preparing minting");
     return
       pieceContract.setMintingEnabled(true) &&
       puzzleContract.setMintingEnabled(true);
+  }
+
+  /** @dev Mints all pieces to an address and all puzzles to itself.
+   * @param mintPiecesTo address to send the minted pieces to
+   */
+  function runMinting(address mintPiecesTo) external onlyOwner {
+    console.log("Run minting");
+    pieceContract.mintAllPieces(mintPiecesTo);
+    puzzleContract.mintAllPuzzles();
   }
 
   /** @dev Locks a users puzzle and returns its pieces to the user.
@@ -46,6 +55,10 @@ contract CastleContract is ERC1155Holder, Ownable {
    */
   function retrievePieces(uint8 tier) external returns (bool success) {
     require(puzzleContract.balanceOf(msg.sender, tier) > 0, "NO_PUZZLE");
+    require(
+      puzzleContract.isApprovedForAll(msg.sender, address(this)),
+      "NOT_APPROVED"
+    );
     console.log("Retrieving pieces for %s with tier %s", msg.sender, tier);
     puzzleContract.safeTransferFrom(msg.sender, address(this), tier, 1, "");
     pieceContract.safeBatchTransferFrom(
@@ -77,6 +90,10 @@ contract CastleContract is ERC1155Holder, Ownable {
    */
   function lockPieces(uint8 tier) external returns (bool success) {
     require(canLockPiecesForTier(tier), "INCOMPLETE_PUZZLE");
+    require(
+      pieceContract.isApprovedForAll(msg.sender, address(this)),
+      "NOT_APPROVED"
+    );
     console.log("Locking pieces for %s with tier %s", msg.sender, tier);
     pieceContract.safeBatchTransferFrom(
       msg.sender,
@@ -87,15 +104,5 @@ contract CastleContract is ERC1155Holder, Ownable {
     );
     puzzleContract.safeTransferFrom(address(this), msg.sender, tier, 1, "");
     return true;
-  }
-
-  /** @dev Mints all pieces to an address and all puzzles to itself.
-   * @param mintPiecesTo address to send the minted pieces to
-   */
-  function runMinting(address mintPiecesTo) external onlyOwner {
-    require(pieceContract.mintingEnabled(), "PIECE_MINT_DISABLED");
-    require(puzzleContract.mintingEnabled(), "PUZZLE_MINT_DISABLED");
-    pieceContract.mintAllPieces(mintPiecesTo);
-    puzzleContract.mintAllPuzzles();
   }
 }

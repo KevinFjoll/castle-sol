@@ -12,8 +12,8 @@ import "./StringUtils.sol";
 /** @title Piece Contract */
 contract PieceContract is ERC1155, Ownable {
   uint16[4] private puzzlesPerTier;
-  uint8 private rowCount = 3;
-  uint8 private columnCount = 3;
+  uint8 private rowCount;
+  uint8 private columnCount;
 
   bool public mintingEnabled;
   bool public mintingDone;
@@ -24,7 +24,7 @@ contract PieceContract is ERC1155, Ownable {
     uint8 _columnCount
   )
     ERC1155(
-      "https://raw.githubusercontent.com/CastleNFT/castle-sol/master/test-data/pieces/{id}.json"
+      "https://bafybeianv56sdv2ajdopcdvi5f6hrt65rww6oryg3olrmec5bwb6zlsdpi.ipfs.dweb.link/{id}.json"
     )
   {
     puzzlesPerTier = _puzzlesPerTier;
@@ -44,26 +44,6 @@ contract PieceContract is ERC1155, Ownable {
     require(!mintingDone, "Minting has already been done.");
     console.log("Setting mintingEnabled to %s", enabled);
     return mintingEnabled = enabled;
-  }
-
-  /** @dev Override of uri function to return puzzle specific metadata uri
-   * @param tokenId tokenId of the puzzle whose metadata uri is being queried for
-   * @return _uri the URI of this specific token
-   */
-  function uri(uint256 tokenId)
-    public
-    pure
-    override
-    returns (string memory _uri)
-  {
-    return
-      string(
-        abi.encodePacked(
-          "https://raw.githubusercontent.com/CastleNFT/castle-sol/master/test-data/pieces/",
-          StringUtils.uint2str(tokenId),
-          ".json"
-        )
-      );
   }
 
   /** @dev Mints all pieces to a specified address and disables minting
