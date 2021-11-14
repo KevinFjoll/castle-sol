@@ -11,7 +11,8 @@
     "verify:puzzle": "hardhat verify --network rinkeby --constructor-args scripts/deployArgumentsPuzzle.js",
     "verify:piece": "hardhat verify --network rinkeby --constructor-args scripts/deployArgumentsPiece.js",
     "compile": "hardhat compile",
-    "start": "hardhat node"
+    "start": "hardhat node",
+    "metadata": "node scripts/createMetadata.js"
   },
   "repository": {
     "type": "git",
