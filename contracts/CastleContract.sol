@@ -38,7 +38,6 @@ contract CastleContract is ERC1155Holder, Ownable {
    * @return success if both contracts are now enabled to mint
    */
   function prepareMinting() external onlyOwner returns (bool success) {
-    console.log("Preparing minting");
     return
       pieceContract.setMintingEnabled(true) &&
       puzzleContract.setMintingEnabled(true);
@@ -48,31 +47,8 @@ contract CastleContract is ERC1155Holder, Ownable {
    * @param mintPiecesTo address to send the minted pieces to
    */
   function runMinting(address mintPiecesTo) external onlyOwner {
-    console.log("Run minting");
     pieceContract.mintAllPieces(mintPiecesTo);
     puzzleContract.mintAllPuzzles();
-  }
-
-  /** @dev Locks a users puzzle and returns its pieces to the user.
-   * @param tier the tier of the puzzle to be locked
-   * @return success if the transfer has been finished successfully
-   */
-  function retrievePieces(uint8 tier) external returns (bool success) {
-    require(puzzleContract.balanceOf(msg.sender, tier) > 0, "NO_PUZZLE");
-    require(
-      puzzleContract.isApprovedForAll(msg.sender, address(this)),
-      "NOT_APPROVED"
-    );
-    console.log("Retrieving pieces for %s with tier %s", msg.sender, tier);
-    puzzleContract.safeTransferFrom(msg.sender, address(this), tier, 1, "");
-    pieceContract.safeBatchTransferFrom(
-      address(this),
-      msg.sender,
-      pieceContract.getTokenIdsOfTier(tier),
-      ArrayUtils.getFilledArray(rowCount * columnCount, 1),
-      ""
-    );
-    return true;
   }
 
   /** @dev Checks if a user can lock their pieces and retrieve a puzzle.
@@ -98,7 +74,6 @@ contract CastleContract is ERC1155Holder, Ownable {
       pieceContract.isApprovedForAll(msg.sender, address(this)),
       "NOT_APPROVED"
     );
-    console.log("Locking pieces for %s with tier %s", msg.sender, tier);
     pieceContract.safeBatchTransferFrom(
       msg.sender,
       address(this),
@@ -107,6 +82,27 @@ contract CastleContract is ERC1155Holder, Ownable {
       ""
     );
     puzzleContract.safeTransferFrom(address(this), msg.sender, tier, 1, "");
+    return true;
+  }
+
+  /** @dev Locks a users puzzle and returns its pieces to the user.
+   * @param tier the tier of the puzzle to be locked
+   * @return success if the transfer has been finished successfully
+   */
+  function retrievePieces(uint8 tier) external returns (bool success) {
+    require(puzzleContract.balanceOf(msg.sender, tier) > 0, "NO_PUZZLE");
+    require(
+      puzzleContract.isApprovedForAll(msg.sender, address(this)),
+      "NOT_APPROVED"
+    );
+    puzzleContract.safeTransferFrom(msg.sender, address(this), tier, 1, "");
+    pieceContract.safeBatchTransferFrom(
+      address(this),
+      msg.sender,
+      pieceContract.getTokenIdsOfTier(tier),
+      ArrayUtils.getFilledArray(rowCount * columnCount, 1),
+      ""
+    );
     return true;
   }
 }

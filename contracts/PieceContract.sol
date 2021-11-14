@@ -6,7 +6,6 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "hardhat/console.sol";
 import "./StringUtils.sol";
 
 /** @title Piece Contract */
@@ -42,30 +41,7 @@ contract PieceContract is ERC1155, Ownable {
     returns (bool _mintingEnabled)
   {
     require(!mintingDone, "MINTING_DONE");
-    console.log("Setting mintingEnabled to %s", enabled);
     return mintingEnabled = enabled;
-  }
-
-  /** @dev Mints all pieces to a specified address and disables minting
-   * @param mintTo address where pieces are minted to
-   */
-  function mintAllPieces(address mintTo) public onlyOwner {
-    require(!mintingDone, "MINTING_DONE");
-    require(mintingEnabled, "MINTING_DISABLED");
-    console.log("Minting pieces to %s", mintTo);
-    for (uint8 tier = 1; tier <= puzzlesPerTier.length; tier++) {
-      for (uint8 row = 1; row <= rowCount; row++) {
-        for (uint8 col = 1; col <= columnCount; col++) {
-          _mint(
-            mintTo,
-            calcTokenId(tier, row, col),
-            puzzlesPerTier[tier - 1],
-            ""
-          );
-        }
-      }
-    }
-    (mintingEnabled, mintingDone) = (false, true);
   }
 
   /** @dev Calculates tokenId based on tier, row and column
@@ -105,5 +81,26 @@ contract PieceContract is ERC1155, Ownable {
       }
     }
     return ids;
+  }
+
+  /** @dev Mints all pieces to a specified address and disables minting
+   * @param mintTo address where pieces are minted to
+   */
+  function mintAllPieces(address mintTo) public onlyOwner {
+    require(!mintingDone, "MINTING_DONE");
+    require(mintingEnabled, "MINTING_DISABLED");
+    for (uint8 tier = 1; tier <= puzzlesPerTier.length; tier++) {
+      for (uint8 row = 1; row <= rowCount; row++) {
+        for (uint8 col = 1; col <= columnCount; col++) {
+          _mint(
+            mintTo,
+            calcTokenId(tier, row, col),
+            puzzlesPerTier[tier - 1],
+            ""
+          );
+        }
+      }
+    }
+    (mintingEnabled, mintingDone) = (false, true);
   }
 }

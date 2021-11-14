@@ -6,7 +6,6 @@ pragma abicoder v2;
 import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 import "@openzeppelin/contracts/token/ERC1155/utils/ERC1155Holder.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "hardhat/console.sol";
 import "./StringUtils.sol";
 
 /** @title Puzzle Contract */
@@ -34,7 +33,6 @@ contract PuzzleContract is ERC1155, Ownable {
     returns (bool _mintingEnabled)
   {
     require(!mintingDone, "MINTING_DONE");
-    console.log("Setting mintingEnabled to %s", enabled);
     return mintingEnabled = enabled;
   }
 
@@ -43,7 +41,6 @@ contract PuzzleContract is ERC1155, Ownable {
   function mintAllPuzzles() public onlyOwner {
     require(!mintingDone, "MINTING_DONE");
     require(mintingEnabled, "MINTING_DISABLED");
-    console.log("Minting puzzles to %s", msg.sender);
     for (uint256 i = 1; i <= puzzlesPerTier.length; i++) {
       _mint(msg.sender, i, puzzlesPerTier[i - 1], "");
     }
