@@ -24,6 +24,15 @@ describe("CastleContract", function () {
       expect(pieceContract).to.be.a("string");
       expect(puzzleContract).to.be.a("string");
     });
+
+    it("deploySubContracts() again", async function () {
+      try {
+        await castle.deploySubContracts();
+      } catch (e: any) {
+        expect(e).to.not.be.undefined;
+        expect(e.message).to.contain("ALREADY_DEPLOYED");
+      }
+    });
   });
 
   describe("CastleContract Functions", function () {
@@ -54,6 +63,19 @@ describe("CastleContract", function () {
       );
     });
 
+    it("runMinting() before prepare", async function () {
+      const accounts = await ethers.getSigners();
+      expect(accounts[0]?.address).to.be.a("string");
+      if (accounts[0].address) {
+        try {
+          await castle.runMinting(accounts[0].address);
+        } catch (e: any) {
+          expect(e).to.not.be.undefined;
+          expect(e.message).to.contain("MINTING_DISABLED");
+        }
+      }
+    });
+
     it("prepareMinting()", async function () {
       await castle.prepareMinting();
       const pieceEnabled = await piece.mintingEnabled();
@@ -64,7 +86,7 @@ describe("CastleContract", function () {
 
     it("runMinting()", async function () {
       const accounts = await ethers.getSigners();
-      expect(accounts[0]).to.be.a("object");
+      expect(accounts[0]?.address).to.be.a("string");
       if (accounts[0].address) {
         await castle.runMinting(accounts[0].address);
         expect(
@@ -86,9 +108,22 @@ describe("CastleContract", function () {
       }
     });
 
+    it("runMinting() again", async function () {
+      const accounts = await ethers.getSigners();
+      expect(accounts[0]?.address).to.be.a("string");
+      if (accounts[0].address) {
+        try {
+          await castle.runMinting(accounts[0].address);
+        } catch (e: any) {
+          expect(e).to.not.be.undefined;
+          expect(e.message).to.contain("MINTING_DONE");
+        }
+      }
+    });
+
     it("canLockPiecesForTier()", async function () {
       const accounts = await ethers.getSigners();
-      expect(accounts[0]).to.be.a("object");
+      expect(accounts[0]?.address).to.be.a("string");
       if (accounts[0].address) {
         expect(await piece.mintingDone());
         expect(await puzzle.mintingDone());
@@ -99,9 +134,26 @@ describe("CastleContract", function () {
       }
     });
 
+    it("lockPieces() without approval", async function () {
+      const accounts = await ethers.getSigners();
+      expect(accounts[0]?.address).to.be.a("string");
+      if (accounts[0].address) {
+        try {
+          await Promise.all(
+            fillRange(1, puzzlesPerTier.length).map(
+              async (tier) => await castle.lockPieces(tier)
+            )
+          );
+        } catch (e: any) {
+          expect(e).to.not.be.undefined;
+          expect(e.message).to.contain("NOT_APPROVED");
+        }
+      }
+    });
+
     it("lockPieces()", async function () {
       const accounts = await ethers.getSigners();
-      expect(accounts[0]).to.be.a("object");
+      expect(accounts[0]?.address).to.be.a("string");
       if (accounts[0].address) {
         expect(await piece.mintingDone());
         expect(await puzzle.mintingDone());
@@ -126,8 +178,22 @@ describe("CastleContract", function () {
       }
     });
 
+    it("retrievePieces() before approval", async function () {
+      expect(accounts[0]?.address).to.be.a("string");
+      if (accounts[0].address) {
+        try {
+          for (const tier of fillRange(1, puzzlesPerTier.length)) {
+            await castle.retrievePieces(tier);
+          }
+        } catch (e: any) {
+          expect(e).to.not.be.undefined;
+          expect(e.message).to.contain("NOT_APPROVED");
+        }
+      }
+    });
+
     it("retrievePieces()", async function () {
-      expect(accounts[0]).to.be.a("object");
+      expect(accounts[0]?.address).to.be.a("string");
       if (accounts[0].address) {
         expect(await piece.mintingDone());
         expect(await puzzle.mintingDone());
@@ -149,95 +215,5 @@ describe("CastleContract", function () {
         }
       }
     });
-
-    // it("canLockPiecesForTier() after transfer", async function () {
-    //   const accounts = await ethers.getSigners();
-    //   expect(accounts[0]).to.be.a("object");
-    //   expect(accounts[1]).to.be.a("object");
-    //   if (accounts[0].address && accounts[1].address) {
-    //     expect(await piece.mintingDone());
-    //     expect(await puzzle.mintingDone());
-    //     fillRange(1, puzzlesPerTier.length).forEach(async (tier) => {
-    //       await piece.safeBatchTransferFrom(
-    //         accounts[0].address,
-    //         accounts[1].address,
-    //         await piece.getTokenIdsOfTier(tier),
-    //         Array(puzzleSize).fill(1),
-    //         "",
-    //         { from: accounts[0].address }
-    //       );
-    //       expect(
-    //         await castle.canLockPiecesForTier(tier, {
-    //           from: accounts[1].address,
-    //         })
-    //       ).to.be.true;
-    //     });
-    //   }
-    // });
-
-    // it("lockPieces() after transfer", async function () {
-    //   const accounts = await ethers.getSigners();
-    //   expect(accounts[0]).to.be.a("object");
-    //   expect(accounts[1]).to.be.a("object");
-    //   if (accounts[0].address && accounts[1].address) {
-    //     expect(await piece.mintingDone());
-    //     expect(await puzzle.mintingDone());
-
-    //     await piece.setApprovalForAll(castle.address, true, {
-    //       from: accounts[1].address,
-    //     });
-
-    //     await Promise.all(
-    //       fillRange(1, puzzlesPerTier.length).map(async (tier) => {
-    //         await piece.safeBatchTransferFrom(
-    //           accounts[0].address,
-    //           accounts[1].address,
-    //           await piece.getTokenIdsOfTier(tier),
-    //           Array(puzzleSize).fill(1),
-    //           "",
-    //           { from: accounts[0].address }
-    //         );
-    //         await castle.lockPieces(tier, { from: accounts[1].address });
-    //         expect(
-    //           (
-    //             await piece.balanceOfBatch(
-    //               Array(puzzleSize).fill(castle.address),
-    //               fillRange(1, puzzleSize)
-    //             )
-    //           ).map((bn) => bn.toNumber())
-    //         ).to.deep.equal(Array(puzzleSize).fill(1));
-    //         expect(await puzzle.balanceOf(accounts[1].address, tier)).to.equal(
-    //           1
-    //         );
-    //       })
-    //     );
-    //   }
-    // });
-
-    // it("retrievePieces() after transfer", async function () {
-    //   expect(accounts[0]).to.be.a("object");
-    //   if (accounts[0].address) {
-    //     expect(await piece.mintingDone());
-    //     expect(await puzzle.mintingDone());
-
-    //     await puzzle.setApprovalForAll(castle.address, true);
-
-    //     for (const tier of fillRange(1, puzzlesPerTier.length)) {
-    //       expect(await puzzle.balanceOf(accounts[0].address, tier)).to.equal(1);
-    //       await castle.retrievePieces(tier);
-    //       expect(
-    //         (
-    //           await piece.balanceOfBatch(
-    //             Array(puzzleSize).fill(accounts[0].address),
-    //             fillRange(1, puzzleSize)
-    //           )
-    //         ).map((bn) => bn.toNumber())
-    //       ).to.deep.equal(Array(puzzleSize).fill(1));
-    //       expect(await puzzle.balanceOf(castle.address, tier)).to.equal(
-    //         puzzlesPerTier[tier - 1]
-    //       );
-    //     }
-    //   }
-    // });
   });
 });

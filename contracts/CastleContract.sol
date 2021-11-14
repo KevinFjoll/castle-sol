@@ -23,11 +23,15 @@ contract CastleContract is ERC1155Holder, Ownable {
   uint8 private ironTier = 3;
   uint8 private bronceTier = 4;
 
+  bool private subContractsDeployed;
+
   /** @dev Deploys an instance of both PieceContract and PuzzleContract.
    */
   function deploySubContracts() external onlyOwner {
+    require(!subContractsDeployed, "ALREADY_DEPLOYED");
     pieceContract = new PieceContract(puzzlesPerTier, rowCount, columnCount);
     puzzleContract = new PuzzleContract(puzzlesPerTier);
+    subContractsDeployed = true;
   }
 
   /** @dev Enables minting on the children contracts.

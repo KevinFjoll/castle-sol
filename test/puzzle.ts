@@ -25,6 +25,15 @@ describe("PuzzleContract", function () {
     expect(puzzle.address).to.be.a("string");
   });
 
+  it("mintAllPuzzles() before enabling mint", async function () {
+    try {
+      await puzzle.mintAllPuzzles();
+    } catch (e: any) {
+      expect(e).to.not.be.undefined;
+      expect(e.message).to.contain("MINTING_DISABLED");
+    }
+  });
+
   it("setMintingEnabled()", async function () {
     await puzzle.setMintingEnabled(true);
     expect(await puzzle.mintingEnabled()).to.be.true;
@@ -32,22 +41,43 @@ describe("PuzzleContract", function () {
 
   it("mintAllPuzzles()", async function () {
     const accounts = await ethers.getSigners();
-    await puzzle.mintAllPuzzles();
-    expect(
-      (
-        await puzzle.balanceOfBatch(
-          Array(puzzlesPerTier.length).fill(accounts[0].address),
-          fillRange(1, puzzlesPerTier.length)
-        )
-      ).map((bn) => bn.toNumber())
-    ).to.deep.equal(puzzlesPerTier);
+    expect(accounts[0]?.address).to.be.a("string");
+    if (accounts[0].address) {
+      await puzzle.mintAllPuzzles();
+      expect(
+        (
+          await puzzle.balanceOfBatch(
+            Array(puzzlesPerTier.length).fill(accounts[0].address),
+            fillRange(1, puzzlesPerTier.length)
+          )
+        ).map((bn) => bn.toNumber())
+      ).to.deep.equal(puzzlesPerTier);
+    }
+  });
+
+  it("mintAllPuzzles() again", async function () {
+    try {
+      await puzzle.mintAllPuzzles();
+    } catch (e: any) {
+      expect(e).to.not.be.undefined;
+      expect(e.message).to.contain("MINTING_DONE");
+    }
+  });
+
+  it("setMintingEnabled() again", async function () {
+    try {
+      await puzzle.setMintingEnabled(true);
+    } catch (e: any) {
+      expect(e).to.not.be.undefined;
+      expect(e.message).to.contain("MINTING_DONE");
+    }
   });
 
   it("uri()", async function () {
     expect(await puzzle.mintingDone()).to.be.true;
     const uri = await puzzle.uri(1);
     expect(uri).to.be.equal(
-      "https://bafybeibigzpasy5bx2hnzeqzoanscaaspjz6kgswpmzs6s2bcpvaa4y2mq.ipfs.dweb.link/{id}.json"
+      "https://bafybeiela6wtg3ga7kn3aznqomjzvfbxi36hd2ral4gc3zga2o3kcipigu.ipfs.dweb.link/{id}.json"
     );
   });
 });

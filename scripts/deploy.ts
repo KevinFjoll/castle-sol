@@ -8,18 +8,22 @@ import { ethers } from "hardhat";
 async function main() {
   const [deployer] = await ethers.getSigners();
 
-  console.log("Deploying contracts with the account:", deployer.address);
+  console.log(`\n[DEPLOYMENT] Deployer: ${deployer.address}`);
 
   const CastleContract = await ethers.getContractFactory("CastleContract");
   const castle = await CastleContract.deploy();
 
-  console.log(`CastleContract deployed to: ${castle.address}`);
+  console.log(`[DEPLOYMENT] CastleContract: ${castle.address}`);
 
-  await castle.deploySubContracts();
+  const receipt = await (await castle.deploySubContracts()).wait();
 
-  console.log(
-    `PuzzleContract deployed to: ${await castle.puzzleContract()} and PieceContract to: ${await castle.pieceContract()}`
-  );
+  const deployedAddresses = receipt.events?.map((e) => e.address) || [
+    undefined,
+    undefined,
+  ];
+
+  console.log(`[DEPLOYMENT] PuzzleContract: ${deployedAddresses[1]}`);
+  console.log(`[DEPLOYMENT] PieceContract: ${deployedAddresses[0]}`);
 }
 
 main().catch((error) => {

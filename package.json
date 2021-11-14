@@ -7,8 +7,9 @@
     "test": "hardhat test",
     "deploy:local": "hardhat run scripts/deploy.ts --network localhost",
     "deploy:rinkeby": "hardhat run scripts/deploy.ts --network rinkeby",
-    "verify:piece:rinkeby": "npx hardhat verify --network rinkeby --constructor-args scripts/deployArgumentsPiece.js ",
-    "verify:puzzle:rinkeby": "npx hardhat verify --network rinkeby --constructor-args scripts/deployArgumentsPuzzle.js ",
+    "verify:castle": "hardhat verify --network rinkeby",
+    "verify:puzzle": "hardhat verify --network rinkeby --constructor-args scripts/deployArgumentsPuzzle.js",
+    "verify:piece": "hardhat verify --network rinkeby --constructor-args scripts/deployArgumentsPiece.js",
     "compile": "hardhat compile",
     "start": "hardhat node"
   },

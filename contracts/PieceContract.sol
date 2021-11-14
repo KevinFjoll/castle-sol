@@ -41,7 +41,7 @@ contract PieceContract is ERC1155, Ownable {
     onlyOwner
     returns (bool _mintingEnabled)
   {
-    require(!mintingDone, "Minting has already been done.");
+    require(!mintingDone, "MINTING_DONE");
     console.log("Setting mintingEnabled to %s", enabled);
     return mintingEnabled = enabled;
   }
@@ -50,7 +50,8 @@ contract PieceContract is ERC1155, Ownable {
    * @param mintTo address where pieces are minted to
    */
   function mintAllPieces(address mintTo) public onlyOwner {
-    require(mintingEnabled, "Minting is disabled.");
+    require(!mintingDone, "MINTING_DONE");
+    require(mintingEnabled, "MINTING_DISABLED");
     console.log("Minting pieces to %s", mintTo);
     for (uint8 tier = 1; tier <= puzzlesPerTier.length; tier++) {
       for (uint8 row = 1; row <= rowCount; row++) {
@@ -93,8 +94,8 @@ contract PieceContract is ERC1155, Ownable {
     view
     returns (uint256[] memory _tokenIds)
   {
-    require(tier <= puzzlesPerTier.length, "Tier exceeds max value.");
-    require(tier >= 1, "Tier exceeds min value.");
+    require(tier <= puzzlesPerTier.length, "MAX_TIER_EXCEEDED");
+    require(tier >= 1, "MIN_TIER_EXCEEDED");
     uint256[] memory ids = new uint256[](rowCount * columnCount);
     for (uint8 row = 1; row <= rowCount; row++) {
       for (uint8 col = 1; col <= columnCount; col++) {

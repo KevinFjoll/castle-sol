@@ -29,6 +29,19 @@ describe("PieceContract", function () {
     expect(piece.address).to.be.a("string");
   });
 
+  it("mintAllPieces() before enabling mint", async function () {
+    try {
+      const accounts = await ethers.getSigners();
+      expect(accounts[0]?.address).to.be.a("string");
+      if (accounts[0].address) {
+        await piece.mintAllPieces(accounts[0].address);
+      }
+    } catch (e: any) {
+      expect(e).to.not.be.undefined;
+      expect(e.message).to.contain("MINTING_DISABLED");
+    }
+  });
+
   it("setMintingEnabled()", async function () {
     await piece.setMintingEnabled(true);
     expect(await piece.mintingEnabled()).to.be.true;
@@ -62,23 +75,48 @@ describe("PieceContract", function () {
 
   it("mintAllPieces()", async function () {
     const accounts = await ethers.getSigners();
-    await piece.mintAllPieces(accounts[0].address);
-    expect(
-      (
-        await piece.balanceOfBatch(
-          Array(puzzlesPerTier.length * rowCount * columnCount).fill(
-            accounts[0].address
-          ),
-          fillRange(1, puzzlesPerTier.length * rowCount * columnCount)
+    expect(accounts[0]?.address).to.be.a("string");
+    if (accounts[0].address) {
+      await piece.mintAllPieces(accounts[0].address);
+      expect(
+        (
+          await piece.balanceOfBatch(
+            Array(puzzlesPerTier.length * rowCount * columnCount).fill(
+              accounts[0].address
+            ),
+            fillRange(1, puzzlesPerTier.length * rowCount * columnCount)
+          )
+        ).map((bn) => bn.toNumber())
+      ).to.deep.equal(
+        Array(0).concat(
+          ...puzzlesPerTier.map((puzzles) =>
+            Array(rowCount * columnCount).fill(puzzles)
+          )
         )
-      ).map((bn) => bn.toNumber())
-    ).to.deep.equal(
-      Array(0).concat(
-        ...puzzlesPerTier.map((puzzles) =>
-          Array(rowCount * columnCount).fill(puzzles)
-        )
-      )
-    );
+      );
+    }
+  });
+
+  it("mintAllPieces() again", async function () {
+    try {
+      const accounts = await ethers.getSigners();
+      expect(accounts[0]?.address).to.be.a("string");
+      if (accounts[0].address) {
+        await piece.mintAllPieces(accounts[0].address);
+      }
+    } catch (e: any) {
+      expect(e).to.not.be.undefined;
+      expect(e.message).to.contain("MINTING_DONE");
+    }
+  });
+
+  it("setMintingEnabled() again", async function () {
+    try {
+      await piece.setMintingEnabled(true);
+    } catch (e: any) {
+      expect(e).to.not.be.undefined;
+      expect(e.message).to.contain("MINTING_DONE");
+    }
   });
 
   it("uri()", async function () {
